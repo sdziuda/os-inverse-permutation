@@ -5,7 +5,7 @@ global inverse_permutation
 ;   rsi - wskaźnik na tablicę z permutacją
 inverse_permutation:
         cmp     rdi, 0x0        ; testujemy czy n <= 0
-        jle      .incorrect     ; jeśli tak, to przechodzimy do etykiety .incorrect
+        jle     .incorrect      ; jeśli tak, to przechodzimy do etykiety .incorrect
         mov     rax, 0x7fffffff ; ustawiamy rax na największą liczbę 32-bitową (2^31 - 1)
         add     rax, 0x2        ; dodajemy 2, aby uzyskać 2^31 + 1 (największą liczbę dla której n ma sens)
         cmp     rdi, rax        ; porównujemy n z 2^31 + 1
