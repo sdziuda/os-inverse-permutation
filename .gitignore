@@ -1,0 +1,7 @@
+
+.idea/
+cmake-build-debug/
+CMakeLists.txt
+*.o
+inverse_permutation_example
+test.sh
