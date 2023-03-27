@@ -5,3 +5,4 @@ CMakeLists.txt
 *.o
 inverse_permutation_example
 test.sh
+test.c
