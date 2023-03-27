@@ -10,7 +10,8 @@ inverse_permutation:
         cmp     rdi, rcx                ; porównujemy n z 2^31 (największą liczbą dla której n ma sens)
         jg      .incorrect              ; jeśli n > 2^31, to przechodzimy do etykiety .incorrect
         mov     r8, 0x0                 ; ustawiamy r8 na 0 (indeks w tablicy)
-.loop_begin:
+
+.loop_range:
         movsxd  rcx, DWORD [rsi+r8*4]   ; wczytujemy wartość z tablicy
         cmp     rcx, 0x0                ; porównujemy wartość w tablicy z 0
         jl      .incorrect              ; jeśli jest < 0, to przechodzimy do etykiety .incorrect
@@ -18,9 +19,19 @@ inverse_permutation:
         jge     .incorrect              ; jeśli jest >= n, to przechodzimy do etykiety .incorrect
         inc     r8                      ; zwiększamy indeks
         cmp     r8, rdi                 ; porównujemy indeks (r8) z n (rdi)
-        jl      .loop_begin             ; jeśli indeks < n, to przechodzimy do etykiety .loop_begin (kontynuujemy pętlę)
+        jl      .loop_range             ; jeśli jest < n, to przechodzimy do etykiety .loop_range (kontynuujemy pętlę)
+
+        mov     r8, 0x0                 ; ustawiamy r8 na 0 (indeks w tablicy)
+.loop_unique:
+        movsxd  rcx, DWORD [rsi+r8*4]   ; wczytujemy wartość z tablicy
+        inc     r8                      ; zwiększamy indeks
+        cmp     r8, rdi                 ; porównujemy indeks (r8) z n (rdi)
+        jl      .loop_unique            ; jeśli jest < n, to przechodzimy do etykiety .loop_unique (kontynuujemy pętlę)
+
+.correct:
         mov     rax, 0x1                ; jeśli przeszliśmy przez to wszystko, to dane są poprawne, zatem rax = 1 (true)
         ret                             ; i zwracamy true
+
 .incorrect:
         mov     rax, 0x0                ; jeśli n jest niepoprawne, to rax = 0 (false)
         ret                             ; i zwracamy false
