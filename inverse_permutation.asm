@@ -31,14 +31,17 @@ inverse_permutation:
                                         ; tablicy)
         test    rcx, rcx                ; porównujemy wartość w tablicy z 0
         jge     .positive               ; jeśli jest >= 0, to przechodzimy do etykiety .positive
-        add     rcx, rdi                ; w przeciwnym przypadku dodajemy n - 1 do wartości w tablicy
+        add     rcx, rdi                ; w przeciwnym przypadku dodajemy n - 1 do wczytanej wartości
+        inc     rcx                     ; dodajemy 1 do otrzymanej wartości aby była z zakresu 0...n-1
 .positive:
         mov     r9d, DWORD [rsi+rcx*4]  ; wczytujemy wartość z tablicy (na indeksie, który wcześniej wczytaliśmy)
         test    r9d, r9d                ; porównujemy tą wartość z 0
         jl      .not_unique             ; jeśli jest < 0, to przechodzimy do etykiety .not_unique (wartość się
                                         ; powtórzyła, ale trzeba jeszcze przywrócić tablicę do początkowego stanu)
-        sub     r9d, edi                ; w przeciwnym przypadku odejmujemy n - 1 od wczytanej wartości (przyjmujemy, że
-                                        ; wartość, która już była na swoim indeksie będzie miała liczę ujemną)
+        sub     r9d, edi                ; w przeciwnym przypadku odejmujemy n - 1 od wczytanej wartości
+        dec     r9d                     ; odejmujemy jeszcze 1 (w sumie odejmujemy n) od otrzymanej wartości aby była
+                                        ; z zakresu -n...-1 (przyjmujemy, że wartość, która już wystąpiła, na swoim
+                                        ; indeksie będzie miała liczę ujemną)
         mov     DWORD [rsi+rcx*4], r9d  ; zapisujemy wartość w tablicy (na indeksie, który wcześniej wczytaliśmy)
         inc     r8                      ; zwiększamy indeks
         cmp     r8d, edi                ; porównujemy indeks (r8d) z n - 1 (edi)
@@ -54,7 +57,8 @@ inverse_permutation:
         mov     ecx, DWORD [rsi+r8*4]   ; wczytujemy wartość z tablicy
         test    ecx, ecx                ; porównujemy wartość w tablicy z 0
         jge     .positive_not_unique    ; jeśli jest >= 0, to przechodzimy do etykiety .positive_not_unique
-        add     ecx, edi                ; w przeciwnym przypadku dodajemy n do wartości w tablicy
+        add     ecx, edi                ; w przeciwnym przypadku dodajemy n - 1 do wartości w tablicy
+        inc     ecx                     ; dodajemy 1 do otrzymanej wartości aby była z zakresu 0...n-1
 .positive_not_unique:
         mov     DWORD [rsi+r8*4], ecx   ; wczytujemy wartość z tablicy (na indeksie, który wcześniej wczytaliśmy)
         inc     r8                      ; zwiększamy indeks
