@@ -46,6 +46,29 @@ inverse_permutation:
         inc     r8                      ; zwiększamy indeks
         cmp     r8d, edi                ; porównujemy indeks (r8d) z n - 1 (edi)
         jle     .loop_unique            ; jeśli jest <= n - 1, to przechodzimy do .loop_unique (kontynuujemy pętlę)
+        xor     r8, r8                  ; ustawiamy r8 z powrotem na 0 (indeks w tablicy)
+
+.loop_inverse:
+        mov     ecx, DWORD [rsi+r8*4]   ; wczytujemy wartość z tablicy (będzie to potencjalny kolejny indeks w cyklu)
+        movsxd  rcx, ecx                ; rozszerzamy wartość w ecx do 64-bitów
+        test    rcx, rcx                ; porównujemy wartość w tablicy z 0
+        jge     .positive_inverse       ; jeśli jest >= 0, to przechodzimy do etykiety .positive_inverse
+        mov     r10, r8                 ; wpp. kopiujemy indeks początku cyklu (r8) do r10
+.loop_inverse_cycle:
+        add     rcx, rdi                ; dodajemy n - 1 do kolejnego indeksu w cyklu
+        inc     rcx                     ; dodajemy 1 do otrzymanej wartości aby była z zakresu 0...n-1
+        mov     r9d, DWORD [rsi+rcx*4]  ; wczytujemy wartość z tablicy (na indeksie, który wcześniej wczytaliśmy)
+        test    r9d, r9d                ; porównujemy tą wartość z 0
+        jge     .positive_inverse       ; jeśli jest >= 0, to przechodzimy do etykiety .positive_inverse (skończyliśmy
+                                        ; przesuwać aktualny cykl)
+        mov     DWORD [rsi+rcx*4], r10d ; zapisujemy w tablicy aktualny indeks
+        mov     r10, rcx                ; zapisujemy aktualny indeks do r10
+        movsxd  rcx, r9d                ; zapisujemy kolejny indeks (r9d - jest ujemny, dlatego movsxd) do rcx
+        jmp     .loop_inverse_cycle     ; przechodzimy do .loop_inverse_cycle (kontynuujemy cykl)
+.positive_inverse:
+        inc     r8                      ; zwiększamy indeks w głównej pętli
+        cmp     r8d, edi                ; porównujemy indeks (r8d) z n - 1 (edi)
+        jle     .loop_inverse           ; jeśli jest <= n - 1, to przechodzimy do .loop_inverse (kontynuujemy pętlę)
 
 .correct:
         mov     al, 0x1                 ; jeśli przeszliśmy przez to wszystko, to dane są poprawne, zatem al = 1 (true)
