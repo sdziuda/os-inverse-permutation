@@ -21,7 +21,7 @@ inverse_permutation:
         cmp     ecx, edi                ; porównujemy wartość w tablicy (ecx) z n - 1 (edi)
         jg      .incorrect              ; jeśli jest > n - 1, to przechodzimy do etykiety .incorrect
         inc     r8                      ; zwiększamy indeks
-        cmp     r8d, edi                ; porównujemy indeks (r8d) z n (edi)
+        cmp     r8, rdi                 ; porównujemy indeks (r8) z n - 1 (rdi)
         jle     .loop_range             ; jeśli jest <= n - 1, to przechodzimy do .loop_range (kontynuujemy pętlę)
         xor     r8, r8                  ; ustawiamy r8 z powrotem na 0 (indeks w tablicy)
 
@@ -44,7 +44,7 @@ inverse_permutation:
                                         ; indeksie będzie miała liczę ujemną)
         mov     DWORD [rsi+rcx*4], r9d  ; zapisujemy wartość w tablicy (na indeksie, który wcześniej wczytaliśmy)
         inc     r8                      ; zwiększamy indeks
-        cmp     r8d, edi                ; porównujemy indeks (r8d) z n - 1 (edi)
+        cmp     r8, rdi                 ; porównujemy indeks (r8) z n - 1 (rdi)
         jle     .loop_unique            ; jeśli jest <= n - 1, to przechodzimy do .loop_unique (kontynuujemy pętlę)
         xor     r8, r8                  ; ustawiamy r8 z powrotem na 0 (indeks w tablicy)
 
@@ -64,10 +64,10 @@ inverse_permutation:
         mov     DWORD [rsi+rcx*4], r10d ; zapisujemy w tablicy aktualny indeks
         mov     r10, rcx                ; zapisujemy aktualny indeks do r10
         movsxd  rcx, r9d                ; zapisujemy kolejny indeks (r9d - jest ujemny, dlatego movsxd) do rcx
-        jmp     .loop_inverse_cycle     ; przechodzimy do .loop_inverse_cycle (kontynuujemy cykl)
+        jmp     .loop_inverse_cycle     ; przechodzimy do .loop_inverse_cycle (dalej jesteśmy w tym samym cyklu)
 .positive_inverse:
         inc     r8                      ; zwiększamy indeks w głównej pętli
-        cmp     r8d, edi                ; porównujemy indeks (r8d) z n - 1 (edi)
+        cmp     r8, rdi                 ; porównujemy indeks (r8) z n - 1 (rdi)
         jle     .loop_inverse           ; jeśli jest <= n - 1, to przechodzimy do .loop_inverse (kontynuujemy pętlę)
 
 .correct:
@@ -85,8 +85,8 @@ inverse_permutation:
 .positive_not_unique:
         mov     DWORD [rsi+r8*4], ecx   ; wczytujemy wartość z tablicy (na indeksie, który wcześniej wczytaliśmy)
         inc     r8                      ; zwiększamy indeks
-        cmp     r8d, edi                ; porównujemy indeks (r8d) z n - 1 (edi)
-        jle     .loop_not_unique        ; jeśli jest <= n, to przechodzimy do .loop_not_unique (kontynuujemy pętlę)
+        cmp     r8, rdi                 ; porównujemy indeks (r8) z n - 1 (rdi)
+        jle     .loop_not_unique        ; jeśli jest <= n - 1, to przechodzimy do .loop_not_unique (kontynuujemy pętlę)
 
 .incorrect:
         xor     al, al                  ; jeśli n jest niepoprawne, to al = 0 (false)
