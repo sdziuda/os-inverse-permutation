@@ -12,7 +12,7 @@ inverse_permutation:
         cmp     rdi, rcx                ; porównujemy n z 2^31 (największą liczbą dla której n ma sens)
         jg      .incorrect              ; jeśli n > 2^31, to przechodzimy do etykiety .incorrect
         dec     rdi                     ; odejmujemy 1 od n (teraz wartość n - 1 mieści się tak naprawdę w edi)
-        xor     r8, r8                  ; ustawiamy r8 na 0 (indeks w tablicy)
+        xor     r8d, r8d                ; ustawiamy r8 na 0 (indeks w tablicy), operacja na r8d zeruje całe r8
 
 .loop_range:
         mov     ecx, DWORD [rsi+r8*4]   ; wczytujemy wartość z tablicy
@@ -23,12 +23,12 @@ inverse_permutation:
         inc     r8                      ; zwiększamy indeks
         cmp     r8, rdi                 ; porównujemy indeks (r8) z n - 1 (rdi)
         jle     .loop_range             ; jeśli jest <= n - 1, to przechodzimy do .loop_range (kontynuujemy pętlę)
-        xor     r8, r8                  ; ustawiamy r8 z powrotem na 0 (indeks w tablicy)
+        xor     r8d, r8d                ; ustawiamy r8 z powrotem na 0 (indeks w tablicy)
 
 .loop_unique:
-        mov     ecx, DWORD [rsi+r8*4]   ; wczytujemy wartość z tablicy
-        movsxd  rcx, ecx                ; rozszerzamy wartość w ecx do 64-bitów (aby móc wykorzystywać ją do dostępu do
-                                        ; tablicy)
+        movsxd  rcx, DWORD [rsi+r8*4]   ; wczytujemy wartość z tablicy, ale wcześniej musimy ją rozszerzyć do 64-bitów
+                                        ; (aby móc wykorzystywać ją do dostępu do tablicy, ale może być ujemna -
+                                        ; dlatego używamy movsxd, a nie mov)
         test    rcx, rcx                ; porównujemy wartość w tablicy z 0
         jge     .positive               ; jeśli jest >= 0, to przechodzimy do etykiety .positive
         add     rcx, rdi                ; w przeciwnym przypadku dodajemy n - 1 do wczytanej wartości
@@ -46,11 +46,13 @@ inverse_permutation:
         inc     r8                      ; zwiększamy indeks
         cmp     r8, rdi                 ; porównujemy indeks (r8) z n - 1 (rdi)
         jle     .loop_unique            ; jeśli jest <= n - 1, to przechodzimy do .loop_unique (kontynuujemy pętlę)
-        xor     r8, r8                  ; ustawiamy r8 z powrotem na 0 (indeks w tablicy)
+        xor     r8d, r8d                ; ustawiamy r8 z powrotem na 0 (indeks w tablicy)
 
+; w tym momencie wiemy, że tablica jest poprawna oraz aktualnie wszystkie wartości w niej są z zakresu -n...-1
 .loop_inverse:
-        mov     ecx, DWORD [rsi+r8*4]   ; wczytujemy wartość z tablicy (będzie to potencjalny kolejny indeks w cyklu)
-        movsxd  rcx, ecx                ; rozszerzamy wartość w ecx do 64-bitów
+        movsxd  rcx, DWORD [rsi+r8*4]   ; wczytujemy wartość z tablicy (będzie to potencjalny kolejny indeks w cyklu),
+                                        ; ale wcześniej musimy ją rozszerzyć do 64-bitów aby móc wykorzystywać ją do
+                                        ; dostępu do tablicy
         test    rcx, rcx                ; porównujemy wartość w tablicy z 0
         jge     .positive_inverse       ; jeśli jest >= 0, to przechodzimy do etykiety .positive_inverse
         mov     r10, r8                 ; wpp. kopiujemy indeks początku cyklu (r8) do r10
@@ -75,7 +77,7 @@ inverse_permutation:
         ret                             ; i zwracamy true
 
 .not_unique:
-        xor     r8, r8                  ; ustawiamy r8 z powrotem na 0 (indeks w tablicy)
+        xor     r8d, r8d                ; ustawiamy r8 z powrotem na 0 (indeks w tablicy)
 .loop_not_unique:
         mov     ecx, DWORD [rsi+r8*4]   ; wczytujemy wartość z tablicy
         test    ecx, ecx                ; porównujemy wartość w tablicy z 0
