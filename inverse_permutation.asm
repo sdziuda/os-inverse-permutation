@@ -14,6 +14,8 @@ inverse_permutation:
         dec     rdi                     ; odejmujemy 1 od n (teraz wartość n - 1 mieści się tak naprawdę w edi)
         xor     r8d, r8d                ; ustawiamy r8 na 0 (indeks w tablicy), operacja na r8d zeruje całe r8
 
+; sprawdziliśmy już czy n jest z odpowiedniego przedziału, teraz musimy sprawdzić czy wszystkie liczby w tablicy
+; są z przedziału 0...n-1
 .loop_range:
         mov     ecx, DWORD [rsi+r8*4]   ; wczytujemy wartość z tablicy
         test    ecx, ecx                ; porównujemy wartość w tablicy z 0
@@ -25,6 +27,9 @@ inverse_permutation:
         jle     .loop_range             ; jeśli jest <= n - 1, to przechodzimy do .loop_range (kontynuujemy pętlę)
         xor     r8d, r8d                ; ustawiamy r8 z powrotem na 0 (indeks w tablicy)
 
+; w tym momencie wiemy, że wszystkie liczby w tablicy są z zakresu 0...n-1, będziemy teraz chcieli sprawdzić,
+; czy się nie powtarzają - aby to zrobić, gdy napotkamy w tablicy liczbę x, to od p[x] odejmujemy n, jeżeli okaże się,
+; że p[x] jest już ujemne, to znaczy, że liczba x się powtarza
 .loop_unique:
         movsxd  rcx, DWORD [rsi+r8*4]   ; wczytujemy wartość z tablicy, ale wcześniej musimy ją rozszerzyć do 64-bitów
                                         ; (aby móc wykorzystywać ją do dostępu do tablicy, ale może być ujemna -
@@ -40,15 +45,16 @@ inverse_permutation:
                                         ; powtórzyła, ale trzeba jeszcze przywrócić tablicę do początkowego stanu)
         sub     r9d, edi                ; w przeciwnym przypadku odejmujemy n - 1 od wczytanej wartości
         dec     r9d                     ; odejmujemy jeszcze 1 (w sumie odejmujemy n) od otrzymanej wartości aby była
-                                        ; z zakresu -n...-1 (przyjmujemy, że wartość, która już wystąpiła, na swoim
-                                        ; indeksie będzie miała liczę ujemną)
+                                        ; z zakresu -n...-1
         mov     DWORD [rsi+rcx*4], r9d  ; zapisujemy wartość w tablicy (na indeksie, który wcześniej wczytaliśmy)
         inc     r8                      ; zwiększamy indeks
         cmp     r8, rdi                 ; porównujemy indeks (r8) z n - 1 (rdi)
         jle     .loop_unique            ; jeśli jest <= n - 1, to przechodzimy do .loop_unique (kontynuujemy pętlę)
         xor     r8d, r8d                ; ustawiamy r8 z powrotem na 0 (indeks w tablicy)
 
-; w tym momencie wiemy, że tablica jest poprawna oraz aktualnie wszystkie wartości w niej są z zakresu -n...-1
+; w tym momencie wiemy, że tablica jest poprawna oraz aktualnie wszystkie wartości w niej są z zakresu -n...-1, jeżeli
+; napotkamy liczbę ujemną w tablicy, to znaczy, że jest to indeks początku cyklu, którego jeszcze nie odwróciliśmy,
+; jeżeli natomiast napotkamy liczbę nieujemną to znaczy, że została już odwrócona i możemy przejść dalej
 .loop_inverse:
         movsxd  rcx, DWORD [rsi+r8*4]   ; wczytujemy wartość z tablicy (będzie to potencjalny kolejny indeks w cyklu),
                                         ; ale wcześniej musimy ją rozszerzyć do 64-bitów aby móc wykorzystywać ją do
@@ -64,8 +70,9 @@ inverse_permutation:
         jge     .positive_inverse       ; jeśli jest >= 0, to przechodzimy do etykiety .positive_inverse (skończyliśmy
                                         ; przesuwać aktualny cykl)
         mov     DWORD [rsi+rcx*4], r10d ; zapisujemy w tablicy aktualny indeks
-        mov     r10, rcx                ; zapisujemy aktualny indeks do r10
-        movsxd  rcx, r9d                ; zapisujemy kolejny indeks (r9d - jest ujemny, dlatego movsxd) do rcx
+        mov     r10, rcx                ; zapisujemy kolejny indeks do r10
+        movsxd  rcx, r9d                ; zapisujemy odczytaną wcześniej wartość (r9d - jest ujemny, dlatego movsxd) do
+                                        ; rcx (stanie się ona kolejnym indeksem w cyklu)
         jmp     .loop_inverse_cycle     ; przechodzimy do .loop_inverse_cycle (dalej jesteśmy w tym samym cyklu)
 .positive_inverse:
         inc     r8                      ; zwiększamy indeks w głównej pętli
@@ -76,8 +83,10 @@ inverse_permutation:
         mov     al, 0x1                 ; jeśli przeszliśmy przez to wszystko, to dane są poprawne, zatem al = 1 (true)
         ret                             ; i zwracamy true
 
+; któraś wartość się powtórzyła, ale część wartości z tablicy jest ujemna (a dokładnie należy do przedziału -n...-1),
+; więc trzeba je jeszcze przesunąć do przedziału 0...n-1
 .not_unique:
-        xor     r8d, r8d                ; ustawiamy r8 z powrotem na 0 (indeks w tablicy)
+        xor     r8d, r8d                ; ustawiamy r8 na 0 (indeks w tablicy)
 .loop_not_unique:
         mov     ecx, DWORD [rsi+r8*4]   ; wczytujemy wartość z tablicy
         test    ecx, ecx                ; porównujemy wartość w tablicy z 0
@@ -85,7 +94,7 @@ inverse_permutation:
         add     ecx, edi                ; w przeciwnym przypadku dodajemy n - 1 do wartości w tablicy
         inc     ecx                     ; dodajemy 1 do otrzymanej wartości aby była z zakresu 0...n-1
 .positive_not_unique:
-        mov     DWORD [rsi+r8*4], ecx   ; wczytujemy wartość z tablicy (na indeksie, który wcześniej wczytaliśmy)
+        mov     DWORD [rsi+r8*4], ecx   ; zapisujemy wartość w tablicy (na indeksie, który wcześniej wczytaliśmy)
         inc     r8                      ; zwiększamy indeks
         cmp     r8, rdi                 ; porównujemy indeks (r8) z n - 1 (rdi)
         jle     .loop_not_unique        ; jeśli jest <= n - 1, to przechodzimy do .loop_not_unique (kontynuujemy pętlę)
