@@ -88,7 +88,7 @@ inverse_permutation:
 ; więc trzeba je jeszcze przesunąć do przedziału 0...n-1
 .not_unique:
         mov     ecx, edi
-        inc     ecx
+        inc     rcx
 .loop_not_unique:
         mov     eax, DWORD [rsi+rcx*4-4]    ; wczytujemy wartość z tablicy
         test    eax, eax                    ; porównujemy wartość w tablicy z 0
