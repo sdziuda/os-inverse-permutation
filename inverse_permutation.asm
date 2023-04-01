@@ -87,8 +87,8 @@ inverse_permutation:
 ; któraś wartość się powtórzyła, ale część wartości z tablicy jest ujemna (a dokładnie należy do przedziału -n...-1),
 ; więc trzeba je jeszcze przesunąć do przedziału 0...n-1
 .not_unique:
-        mov     ecx, edi
-        inc     rcx
+        mov     ecx, edi                    ; jak wcześniej, ustawiamy ecx na n - 1 (indeks w tablicy)
+        inc     rcx                         ; zwiększamy go o 1
 .loop_not_unique:
         mov     eax, DWORD [rsi+rcx*4-4]    ; wczytujemy wartość z tablicy
         test    eax, eax                    ; porównujemy wartość w tablicy z 0
